@@ -28,9 +28,10 @@ async function run() {
     await client.connect();
 
     const classCollection = client.db('tutorSageDB').collection('classes');
+    const userCollection = client.db('tutorSageDB').collection('users');
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
 
-    // classes related api
+    // user related api
     app.get('/classes', async (req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result);
@@ -43,13 +44,24 @@ async function run() {
       res.send(result);
     });
 
-    // teacher request data api
+    app.post('/users', async(req, res) => {
+      const user = req.body;
+      const query = {email: user.email}
+      const existingUser = await userCollection.findOne(query);
+      if(user.email === existingUser.email){
+        return res.send('User already exist');
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+
+    // teacher related api
     app.post('/teacherRequests', async (req, res) => {
       const requestData = req.body;
       const result = await teacherRequestCollection.insertOne(requestData);
       res.send(result);
       // console.log(requestData);
-    })
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
