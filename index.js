@@ -28,19 +28,28 @@ async function run() {
     await client.connect();
 
     const classCollection = client.db('tutorSageDB').collection('classes');
+    const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
 
     // classes related api
-    app.get('/classes', async(req, res) => {
-        const result = await classCollection.find().toArray();
-        res.send(result);
+    app.get('/classes', async (req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
     });
 
-    app.get('/classes/:id', async(req, res) => {
+    app.get('/classes/:id', async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await classCollection.findOne(query);
       res.send(result);
     });
+
+    // teacher request data api
+    app.post('/teacherRequests', async (req, res) => {
+      const requestData = req.body;
+      const result = await teacherRequestCollection.insertOne(requestData);
+      res.send(result);
+      // console.log(requestData);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -54,9 +63,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Tutor Sage Server is Running');
+  res.send('Tutor Sage Server is Running');
 });
 
 app.listen(port, () => {
-    console.log(`Tutor Sage Server is Running on PORT ${port}`)
+  console.log(`Tutor Sage Server is Running on PORT ${port}`)
 })
