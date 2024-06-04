@@ -32,12 +32,12 @@ async function run() {
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
 
     // admin related apis
-    app.get('/teacherRequests', async (req, res) => {
+    app.get('/teacherRequests/admin', async (req, res) => {
       const result = await teacherRequestCollection.find().toArray();
       res.send(result);
     });
 
-    app.get('/users', async (req, res) => {
+    app.get('/users/admin', async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -45,24 +45,38 @@ async function run() {
     app.get('/classes/admin', async (req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result);
-    })
+    });
 
     app.patch('/users/admin/:id', async (req, res) => {
-      const id = req.params.id;
+      let id = req.params.id;
+      const data = req.body;
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
-          role: 'Admin'
+          role: data.role
         },
       };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result)
     });
 
-    app.patch('/classes/admin/:id', async(req, res) => {
+    app.patch('/teacherRequests/admin/:id', async (req, res) => {
       const id = req.params.id;
       const data = req.body;
-      const filter = {_id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: data.status
+        }
+      }
+      const result = await teacherRequestCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.patch('/classes/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
           status: data.status
@@ -81,9 +95,8 @@ async function run() {
 
     // users related apis
     app.get('/classes', async (req, res) => {
-      // TODO: use query for accepted classes
-      const query = {status: 'Accepted'};
-      const result = await classCollection.find().toArray();
+      const query = { status: 'Accepted' };
+      const result = await classCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -91,6 +104,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await classCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.get('/users/:email', async(req, res) => {
+      const email = req.params.email;
+      const query = {email: email};
+      const result = await userCollection.findOne(query);
       res.send(result);
     });
 
@@ -103,7 +123,7 @@ async function run() {
       }
       const result = await userCollection.insertOne(user);
       res.send(result);
-    })
+    });
 
     // teacher related api
     app.post('/teacherRequests', async (req, res) => {
