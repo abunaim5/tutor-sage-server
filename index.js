@@ -31,6 +31,12 @@ async function run() {
     const userCollection = client.db('tutorSageDB').collection('users');
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
 
+    // admin related apis
+    app.get('/teacherRequests', async(req, res) => {
+      const result = await teacherRequestCollection.find().toArray();
+      res.send(result);
+    })
+
     // user related api
     app.get('/classes', async (req, res) => {
       const result = await classCollection.find().toArray();
