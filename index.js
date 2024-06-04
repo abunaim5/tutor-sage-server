@@ -32,19 +32,24 @@ async function run() {
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
 
     // admin related apis
-    app.get('/teacherRequests', async(req, res) => {
+    app.get('/teacherRequests', async (req, res) => {
       const result = await teacherRequestCollection.find().toArray();
       res.send(result);
     });
 
-    app.get('/users', async(req, res) => {
+    app.get('/users', async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
-    app.patch('/users/admin/:id', async(req, res) => {
+    app.get('/classes/admin', async (req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.patch('/users/admin/:id', async (req, res) => {
       const id = req.params.id;
-      const filter = {_id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
           role: 'Admin'
@@ -54,15 +59,30 @@ async function run() {
       res.send(result)
     });
 
-    app.delete('/users/admin/:id', async(req, res) => {
+    app.patch('/classes/admin/:id', async(req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const data = req.body;
+      const filter = {_id: new ObjectId(id)};
+      const updateDoc = {
+        $set: {
+          status: data.status
+        }
+      }
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.delete('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
 
-    // user related api
+    // users related apis
     app.get('/classes', async (req, res) => {
+      // TODO: use query for accepted classes
+      const query = {status: 'Accepted'};
       const result = await classCollection.find().toArray();
       res.send(result);
     });
@@ -74,11 +94,11 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/users', async(req, res) => {
+    app.post('/users', async (req, res) => {
       const user = req.body;
-      const query = {email: user.email}
+      const query = { email: user.email }
       const existingUser = await userCollection.findOne(query);
-      if(user.email === existingUser?.email){
+      if (user.email === existingUser?.email) {
         return res.send('User already exist');
       }
       const result = await userCollection.insertOne(user);
