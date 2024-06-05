@@ -68,7 +68,7 @@ async function run() {
         $set: {
           status: data.status
         }
-      }
+      };
       const result = await teacherRequestCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
@@ -81,7 +81,7 @@ async function run() {
         $set: {
           status: data.status
         }
-      }
+      };
       const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
@@ -94,22 +94,35 @@ async function run() {
     });
 
     // teachers related apis
-    app.get('/myClasses/:email', async(req, res) => {
+    app.get('/myClasses/:email', async (req, res) => {
       const email = req.params.email;
-      const query = {email: email};
+      const query = { email: email };
       const result = await classCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.post('/classes', async(req, res) => {
+    app.post('/classes', async (req, res) => {
       const classData = req.body;
       const result = await classCollection.insertOne(classData);
       res.send(result);
     });
 
-    app.delete('/classes/:id', async(req, res) => {
+    app.patch('/classes/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const data = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          ...data
+        }
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    app.delete('/classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await classCollection.deleteOne(query);
       res.send(result);
     });
@@ -128,9 +141,9 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/users/:email', async(req, res) => {
+    app.get('/users/:email', async (req, res) => {
       const email = req.params.email;
-      const query = {email: email};
+      const query = { email: email };
       const result = await userCollection.findOne(query);
       res.send(result);
     });
