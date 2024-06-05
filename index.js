@@ -93,6 +93,14 @@ async function run() {
       res.send(result);
     });
 
+    // teachers related apis
+    app.get('/myClasses/:email', async(req, res) => {
+      const email = req.params.email;
+      const query = {email: email};
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // users related apis
     app.get('/classes', async (req, res) => {
       const query = { status: 'Accepted' };
