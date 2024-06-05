@@ -94,6 +94,12 @@ async function run() {
     });
 
     // teachers related apis
+    app.post('/classes', async(req, res) => {
+      const classData = req.body;
+      const result = await classCollection.insertOne(classData);
+      res.send(result);
+    });
+
     app.get('/myClasses/:email', async(req, res) => {
       const email = req.params.email;
       const query = {email: email};
