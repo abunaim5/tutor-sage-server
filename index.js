@@ -167,13 +167,20 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/enrollClasses/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { user_email: email };
+      const result = await enrollClassCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post('/enrollClasses', async (req, res) => {
       const enrollClassInfo = req.body;
       const result = await enrollClassCollection.insertOne(enrollClassInfo);
       res.send(result);
     });
 
-    app.patch('/classes/:id', async (req, res) => {
+    app.patch('/enrollClasses/:id', async (req, res) => {
       const id = req.params.id;
       const { total_enrolment } = req.body;
       const filter = { _id: new ObjectId(id) };
