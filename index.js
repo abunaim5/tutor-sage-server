@@ -31,6 +31,7 @@ async function run() {
     const classCollection = client.db('tutorSageDB').collection('classes');
     const userCollection = client.db('tutorSageDB').collection('users');
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
+    const enrollClassCollection = client.db('tutorSageDB').collection('enrollClasses');
 
     // admin related apis
     app.get('/teacherRequests/admin', async (req, res) => {
@@ -128,7 +129,7 @@ async function run() {
       res.send(result);
     });
 
-    // users related apis
+    // students related apis
     app.get('/classes', async (req, res) => {
       const query = { status: 'Accepted' };
       const result = await classCollection.find(query).toArray();
@@ -163,6 +164,12 @@ async function run() {
     app.post('/teacherRequests', async (req, res) => {
       const requestData = req.body;
       const result = await teacherRequestCollection.insertOne(requestData);
+      res.send(result);
+    });
+
+    app.post('/enrollClasses', async(req, res) => {
+      const enrollClassInfo = req.body;
+      const result = await enrollClassCollection.insertOne(enrollClassInfo);
       res.send(result);
     });
 
