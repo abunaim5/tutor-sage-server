@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -159,12 +160,26 @@ async function run() {
       res.send(result);
     });
 
-    // teacher related api
     app.post('/teacherRequests', async (req, res) => {
       const requestData = req.body;
       const result = await teacherRequestCollection.insertOne(requestData);
       res.send(result);
-      // console.log(requestData);
+    });
+
+    // payment intent
+    app.post('/create-payment-intent', async(req, res) => {
+      const {price} = req.body;
+      const amount = parseInt(price * 100);
+      
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      });
     });
 
     // Send a ping to confirm a successful connection
