@@ -167,17 +167,30 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/enrollClasses', async(req, res) => {
+    app.post('/enrollClasses', async (req, res) => {
       const enrollClassInfo = req.body;
       const result = await enrollClassCollection.insertOne(enrollClassInfo);
       res.send(result);
     });
 
+    app.patch('/classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const { total_enrolment } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          total_enrolment: total_enrolment
+        }
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     // payment intent
-    app.post('/create-payment-intent', async(req, res) => {
-      const {price} = req.body;
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
       const amount = parseInt(price * 100);
-      
+
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: 'usd',
