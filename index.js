@@ -181,9 +181,9 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/enrollClasses/:id', async(req, res) => {
+    app.get('/enrollClasses/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await enrollClassCollection.findOne(query);
       res.send(result);
     });
@@ -213,6 +213,20 @@ async function run() {
       const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
+    app.patch('/classAssignment/:id', async (req, res) => {
+      const id = req.params.id;
+      const { submitCount } = req.body;
+      console.log(submitCount)
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          assignment_submitted: submitCount
+        }
+      }
+      const result = await classCollection.updateOne(query, updateDoc);
+      res.send(result);
+    })
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
