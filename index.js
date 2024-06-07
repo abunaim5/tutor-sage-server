@@ -109,6 +109,20 @@ async function run() {
       res.send(result);
     });
 
+    app.put('/classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const newAssignment = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $push: {
+          assignments: newAssignment
+        }
+      };
+      const result = await classCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
+
     app.patch('/classes/:id', async (req, res) => {
       const id = req.params.id;
       const data = req.body;
