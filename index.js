@@ -32,6 +32,7 @@ async function run() {
     const userCollection = client.db('tutorSageDB').collection('users');
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
     const enrollClassCollection = client.db('tutorSageDB').collection('enrollClasses');
+    const terFeedbackCollection = client.db('tutorSageDB').collection('terFeedbacks');
 
     // admin related apis
     app.get('/teacherRequests/admin', async (req, res) => {
@@ -188,7 +189,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/enrollClasses/:email', async (req, res) => {
+    app.get('/enrollClass/:email', async (req, res) => {
       const email = req.params.email;
       const query = { user_email: email };
       const result = await enrollClassCollection.find(query).toArray();
@@ -198,6 +199,13 @@ async function run() {
     app.post('/enrollClasses', async (req, res) => {
       const enrollClassInfo = req.body;
       const result = await enrollClassCollection.insertOne(enrollClassInfo);
+      res.send(result);
+    });
+
+    app.post('/terFeedbacks', async (req, res) => {
+      const feedback = req.body;
+      console.log(feedback);
+      const result = await terFeedbackCollection.insertOne(feedback);
       res.send(result);
     });
 
@@ -226,7 +234,7 @@ async function run() {
       }
       const result = await classCollection.updateOne(query, updateDoc);
       res.send(result);
-    })
+    });
 
     // payment intent
     app.post('/create-payment-intent', async (req, res) => {
