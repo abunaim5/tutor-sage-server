@@ -196,6 +196,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/terFeedbacks/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = {class_id: id};
+      const result = await terFeedbackCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post('/enrollClasses', async (req, res) => {
       const enrollClassInfo = req.body;
       const result = await enrollClassCollection.insertOne(enrollClassInfo);
