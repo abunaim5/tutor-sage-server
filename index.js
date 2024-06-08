@@ -67,7 +67,18 @@ async function run() {
         return res.status(403).send({ message: 'forbidden access' });
       }
       next();
-    }
+    };
+
+    const verifyTeacher = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isTeacher = user?.role === 'Teacher';
+      if (!isTeacher) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    };
 
     // admin related apis
     app.get('/users/admin/:email', verifyToken, async (req, res) => {
@@ -84,7 +95,7 @@ async function run() {
       res.send({ admin });
     });
 
-    app.get('/teacherRequests/admin',verifyToken, verifyAdmin, async (req, res) => {
+    app.get('/teacherRequests/admin', verifyToken, verifyAdmin, async (req, res) => {
       const result = await teacherRequestCollection.find().toArray();
       res.send(result);
     });
