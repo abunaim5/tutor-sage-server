@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -34,13 +35,36 @@ async function run() {
     const enrollClassCollection = client.db('tutorSageDB').collection('enrollClasses');
     const terFeedbackCollection = client.db('tutorSageDB').collection('terFeedbacks');
 
+    // jwt related apis
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+      res.send({ token });
+    });
+
+    // middlewares
+    const verifyToken = (req, res, next) =>{
+      console.log(req.headers.authorization);
+      if(!req.headers.authorization){
+        return res.status(401).send({message: 'unauthorized access'});
+      }
+      const token = req.headers.authorization.split(' ')[1]
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if(err){
+          return res.status(401).send('unauthorized access')
+        }
+        req.decoded = decoded;
+        next();
+      });
+    }
+
     // admin related apis
     app.get('/teacherRequests/admin', async (req, res) => {
       const result = await teacherRequestCollection.find().toArray();
       res.send(result);
     });
 
-    app.get('/users/admin', async (req, res) => {
+    app.get('/users/admin', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -196,9 +220,9 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/terFeedbacks/:id', async(req, res) =>{
+    app.get('/terFeedbacks/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {class_id: id};
+      const query = { class_id: id };
       const result = await terFeedbackCollection.find(query).toArray();
       res.send(result);
     });
