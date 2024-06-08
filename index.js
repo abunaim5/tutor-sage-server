@@ -80,6 +80,17 @@ async function run() {
       next();
     };
 
+    const verifyStudent = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isStudent = user?.role === 'Student';
+      if (!isStudent) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
+      next();
+    };
+
     // admin related apis
     app.get('/users/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
