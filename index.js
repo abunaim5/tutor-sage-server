@@ -86,7 +86,7 @@ async function run() {
       const user = await userCollection.findOne(query);
       const isStudent = user?.role === 'Student';
       if (!isStudent) {
-        return res.status(403).send({ message: 'forbidden access' })
+        return res.status(403).send({ message: 'forbidden access' });
       }
       next();
     };
@@ -116,12 +116,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/classes/admin', async (req, res) => {
+    app.get('/classes/admin', verifyToken, verifyAdmin, async (req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result);
     });
 
-    app.patch('/users/admin/:id', async (req, res) => {
+    app.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       let id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -134,7 +134,7 @@ async function run() {
       res.send(result)
     });
 
-    app.patch('/teacherRequests/admin/:id', async (req, res) => {
+    app.patch('/teacherRequests/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -147,7 +147,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/classes/admin/:id', async (req, res) => {
+    app.patch('/classes/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -160,7 +160,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/users/admin/:id', async (req, res) => {
+    app.delete('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
@@ -182,20 +182,20 @@ async function run() {
       res.send({ teacher })
     })
 
-    app.get('/myClasses/:email', async (req, res) => {
+    app.get('/myClasses/:email', verifyToken, verifyTeacher, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await classCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.post('/classes', async (req, res) => {
+    app.post('/classes', verifyToken, verifyTeacher, async (req, res) => {
       const classData = req.body;
       const result = await classCollection.insertOne(classData);
       res.send(result);
     });
 
-    app.put('/classes/:id', async (req, res) => {
+    app.put('/classes/:id', verifyToken, verifyTeacher, async (req, res) => {
       const id = req.params.id;
       const newAssignment = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -209,7 +209,7 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/classes/:id', async (req, res) => {
+    app.patch('/classes/:id', verifyToken, verifyTeacher, async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -222,7 +222,7 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/classes/:id', async (req, res) => {
+    app.delete('/classes/:id', verifyToken, verifyTeacher, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await classCollection.deleteOne(query);
@@ -230,6 +230,12 @@ async function run() {
     });
 
     // students related apis
+    app.get('/usersCount', async (req, res) => {
+      const users = await userCollection.find().toArray();
+      const totalUsers = { usersCount: users?.length }
+      res.send(totalUsers);
+    });
+
     app.get('/classes', async (req, res) => {
       const query = { status: 'Accepted' };
       const result = await classCollection.find(query).toArray();
