@@ -43,15 +43,15 @@ async function run() {
     });
 
     // middlewares
-    const verifyToken = (req, res, next) =>{
+    const verifyToken = (req, res, next) => {
       console.log(req.headers.authorization);
-      if(!req.headers.authorization){
-        return res.status(401).send({message: 'unauthorized access'});
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorized access' });
       }
       const token = req.headers.authorization.split(' ')[1]
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if(err){
-          return res.status(401).send('unauthorized access')
+        if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
         }
         req.decoded = decoded;
         next();
@@ -59,6 +59,20 @@ async function run() {
     }
 
     // admin related apis
+    app.get('/users/admin/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === 'Admin';
+      }
+      res.send({ admin });
+    });
+
     app.get('/teacherRequests/admin', async (req, res) => {
       const result = await teacherRequestCollection.find().toArray();
       res.send(result);
@@ -121,6 +135,20 @@ async function run() {
     });
 
     // teachers related apis
+    app.get('/users/teacher/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let teacher = false;
+      if (user) {
+        teacher = user?.role === 'Teacher'
+      }
+      res.send({ teacher })
+    })
+
     app.get('/myClasses/:email', async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
