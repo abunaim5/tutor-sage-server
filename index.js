@@ -9,9 +9,9 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(express.json());
-app.use(cors());
-
-
+app.use(
+  cors()
+);
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xtia1kx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -27,7 +27,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const classCollection = client.db('tutorSageDB').collection('classes');
     const userCollection = client.db('tutorSageDB').collection('users');
@@ -44,7 +44,7 @@ async function run() {
 
     // middlewares
     const verifyToken = (req, res, next) => {
-      console.log(req.headers.authorization);
+      // console.log(req.headers.authorization);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: 'unauthorized access' });
       }
@@ -230,10 +230,25 @@ async function run() {
     });
 
     // students related apis
+    app.get('/user/:email', verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      res.send(user);
+    });
+
     app.get('/usersCount', async (req, res) => {
       const users = await userCollection.find().toArray();
       const totalUsers = { usersCount: users?.length }
       res.send(totalUsers);
+    });
+
+    app.get('/popularClasses', async (req, res) => {
+      const query = { status: 'Accepted' };
+      const sort = { total_enrolment: -1 };
+      const limit = 6;
+      const classes = await classCollection.find(query).sort(sort).limit(limit).toArray();
+      res.send(classes);
     });
 
     app.get('/classes', async (req, res) => {
@@ -287,7 +302,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/feedbacks', async(req, res) => {
+    app.get('/feedbacks', async (req, res) => {
       const feedbacks = await feedbackCollection.find().toArray();
       res.send(feedbacks);
     });
@@ -356,8 +371,8 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
