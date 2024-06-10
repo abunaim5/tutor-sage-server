@@ -33,7 +33,7 @@ async function run() {
     const userCollection = client.db('tutorSageDB').collection('users');
     const teacherRequestCollection = client.db('tutorSageDB').collection('teacherRequests');
     const enrollClassCollection = client.db('tutorSageDB').collection('enrollClasses');
-    const terFeedbackCollection = client.db('tutorSageDB').collection('terFeedbacks');
+    const feedbackCollection = client.db('tutorSageDB').collection('terFeedbacks');
 
     // jwt related apis
     app.post('/jwt', async (req, res) => {
@@ -287,10 +287,15 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/terFeedbacks/:id', async (req, res) => {
+    app.get('/feedbacks', async(req, res) => {
+      const feedbacks = await feedbackCollection.find().toArray();
+      res.send(feedbacks);
+    });
+
+    app.get('/feedbacks/:id', async (req, res) => {
       const id = req.params.id;
       const query = { class_id: id };
-      const result = await terFeedbackCollection.find(query).toArray();
+      const result = await feedbackCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -303,7 +308,7 @@ async function run() {
     app.post('/terFeedbacks', async (req, res) => {
       const feedback = req.body;
       console.log(feedback);
-      const result = await terFeedbackCollection.insertOne(feedback);
+      const result = await feedbackCollection.insertOne(feedback);
       res.send(result);
     });
 
