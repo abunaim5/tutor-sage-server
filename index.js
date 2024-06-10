@@ -91,6 +91,14 @@ async function run() {
       next();
     };
 
+    // normal users apis
+    app.get('/professionals', async(req, res) => {
+      const query = {role: 'Teacher'};
+      const limit = 9;
+      const professionals = await userCollection.find(query).limit(limit).toArray();
+      res.send(professionals);
+    });
+
     // admin related apis
     app.get('/users/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
